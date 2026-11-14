@@ -16,7 +16,11 @@ jobs:
       matrix:
         include:
           - os: windows-latest
+            name: Windows
           - os: macos-13
+            name: Mac-Intel
+          - os: macos-14
+            name: Mac-AppleSilicon
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -39,11 +43,20 @@ jobs:
           Copy-Item "$bin\ffmpeg.exe" .
           Copy-Item "$bin\ffprobe.exe" .
 
-      - name: Download ffmpeg (Mac)
-        if: runner.os == 'macOS'
+      - name: Download ffmpeg (Mac Intel)
+        if: runner.os == 'macOS' && matrix.name == 'Mac-Intel'
         run: |
           curl -L -o ffmpeg.zip https://evermeet.cx/ffmpeg/getrelease/zip
           curl -L -o ffprobe.zip https://evermeet.cx/ffmpeg/getrelease/ffprobe/zip
+          unzip -o ffmpeg.zip
+          unzip -o ffprobe.zip
+          chmod +x ffmpeg ffprobe
+
+      - name: Download ffmpeg (Mac Apple Silicon)
+        if: runner.os == 'macOS' && matrix.name == 'Mac-AppleSilicon'
+        run: |
+          curl -L -o ffmpeg.zip https://www.osxexperts.net/ffmpeg7arm.zip
+          curl -L -o ffprobe.zip https://www.osxexperts.net/ffprobe7arm.zip
           unzip -o ffmpeg.zip
           unzip -o ffprobe.zip
           chmod +x ffmpeg ffprobe
@@ -71,7 +84,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           cd dist
-          ditto -c -k --sequesterRsrc --keepParent AudioPlayer.app AudioPlayer-Mac.zip
+          ditto -c -k --sequesterRsrc --keepParent AudioPlayer.app AudioPlayer-${{ matrix.name }}.zip
 
       - name: Publish Windows file to release
         if: runner.os == 'Windows' && startsWith(github.ref, 'refs/tags/')
@@ -83,4 +96,4 @@ jobs:
         if: runner.os == 'macOS' && startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/AudioPlayer-Mac.zip
+          files: dist/AudioPlayer-${{ matrix.name }}.zip
