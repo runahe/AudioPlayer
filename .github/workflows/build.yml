@@ -17,9 +17,9 @@ jobs:
         include:
           - os: windows-latest
             name: Windows
-          - os: macos-13
+          - os: macos-15-intel
             name: Mac-Intel
-          - os: macos-14
+          - os: macos-latest
             name: Mac-AppleSilicon
     runs-on: ${{ matrix.os }}
 
